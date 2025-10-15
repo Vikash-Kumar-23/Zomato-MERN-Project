@@ -1,0 +1,24 @@
+.home-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  padding: 20px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.home-container h1 {
+  font-size: 3em;
+  margin-bottom: 20px;
+  color: var(--primary-color);
+}
+
+.home-container p {
+  font-size: 1.2em;
+  max-width: 600px;
+  line-height: 1.5;
+}
