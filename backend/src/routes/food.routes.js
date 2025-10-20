@@ -9,6 +9,6 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post('/', authMiddleware.authFoodPartnerMiddleware, upload.single('video'), foodController.createFood);
 
 //GET /api/food/ [protected]
-router.get('/',authMiddleware.authUserMiddleware, foodController.getFoodItems);
+router.get('/', foodController.getFoodItems);
 
 module.exports = router;
