@@ -4,6 +4,7 @@ import UserRegister from '../pages/UserRegister';
 import UserLogin from '../pages/UserLogin';
 import FoodPartnerRegister from '../pages/FoodPartnerRegister';
 import FoodPartnerLogin from '../pages/FoodPartnerLogin';
+import CreateFood from '../pages/food-partner/CreateFood'; // Corrected import path for CreateFood component
 import Home from '../pages/general/Home'; // Import the Home component
 
 const AppRoutes = () => {
@@ -14,6 +15,7 @@ const AppRoutes = () => {
       <Route path="/user/login" element={<UserLogin />} />
       <Route path="/foodpartner/register" element={<FoodPartnerRegister />} />
       <Route path="/foodpartner/login" element={<FoodPartnerLogin />} />
+      <Route path="/create-food" element={<CreateFood />} />
       {/* Add other routes here */}
     </Routes>
   );

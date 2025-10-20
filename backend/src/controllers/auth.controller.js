@@ -26,8 +26,8 @@ async function registerUser(req, res) {
         const token = jwt.sign({
             id: newUser._id,
         },process.env.JWT_SECRET)
-        res.cookie("token",token, {httpOnly:true,sameSite:'None',secure:true})
-        res.status(201).json({ message: 'User registered successfully',
+        res.cookie("token", token, { httpOnly: true, sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', secure: process.env.NODE_ENV === 'production' });
+        res.status(201).json({ success: true, message: 'User registered successfully',
             user:{
                 _id:newUser._id,
                 fullName: newUser.fullName,
@@ -57,8 +57,8 @@ async function loginUser(req, res) {
         const token = jwt.sign({
             id: user._id,
         },process.env.JWT_SECRET)
-        res.cookie("token",token, {httpOnly:true,sameSite:'None',secure:true})
-        res.status(200).json({ message: 'User logged in successfully',
+        res.cookie("token", token, { httpOnly: true, sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', secure: process.env.NODE_ENV === 'production' });
+        res.status(200).json({ success: true, message: 'User logged in successfully',
             user:{
                 _id:user._id,
                 fullName: user.fullName,
@@ -76,7 +76,7 @@ function logoutUser(req, res) {
 }
 
 async function registerFoodPartner(req, res) {
-    const { name, email, password } = req.body;
+    const { name, contactName, phone, address, email, password } = req.body;
     try {
         const foodPartner = await foodPartnerModel.findOne({ email });
         //if food partner already exists
@@ -90,6 +90,9 @@ async function registerFoodPartner(req, res) {
         //create new food partner
         const newFoodPartner = await foodPartnerModel.create({
             name,
+            contactName,
+            phone,
+            address,
             email,
             password: hashedPassword
         })
@@ -97,8 +100,8 @@ async function registerFoodPartner(req, res) {
         const token = jwt.sign({
             id: newFoodPartner._id,
         },process.env.JWT_SECRET)
-        res.cookie("token",token, {httpOnly:true,sameSite:'None',secure:true})
-        res.status(201).json({ message: 'Food partner registered successfully',
+        res.cookie("token", token, { httpOnly: true, sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', secure: process.env.NODE_ENV === 'production' });
+        res.status(201).json({ success: true, message: 'Food partner registered successfully',
             foodPartner:{
                 _id:newFoodPartner._id,
                 name: newFoodPartner.name,
@@ -128,8 +131,8 @@ async function loginFoodPartner(req, res) {
         const token = jwt.sign({
             id: foodPartner._id,
         },process.env.JWT_SECRET)
-        res.cookie("token",token, {httpOnly:true,sameSite:'None',secure:true})
-        res.status(200).json({ message: 'Food partner logged in successfully',
+        res.cookie("token", token, { httpOnly: true, sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', secure: process.env.NODE_ENV === 'production' });
+        res.status(200).json({ success: true, message: 'Food partner logged in successfully',
             foodPartner:{
                 _id:foodPartner._id,
                 name: foodPartner.name,
@@ -137,6 +140,7 @@ async function loginFoodPartner(req, res) {
             }
          });
     } catch (error) {
+        console.error('Error in loginFoodPartner:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
