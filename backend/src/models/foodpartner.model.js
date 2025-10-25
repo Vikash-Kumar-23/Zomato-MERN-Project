@@ -19,15 +19,25 @@ const foodPartnerSchema = new mongoose.Schema({
         required: true
     },
     email: {
-        type: String,
-        required: true,
-        unique: true
+      type: String,
+      required: true,
+      unique: true,
     },
     password: {
-        type: String,
-        required: true
-    }
-});
+      type: String,
+      required: true,
+    },
+    customerServicePhone: {
+      type: String,
+      default: '',
+    },
+    customerServiceEmail: {
+      type: String,
+      default: '',
+    },
+  },
+  { timestamps: true }
+);
 
 const foodPartnerModel = mongoose.model('foodPartner', foodPartnerSchema);
 

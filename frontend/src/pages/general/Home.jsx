@@ -64,7 +64,7 @@ const Home = () => {
             <p className="reel-description line-clamp-2">{item.description}</p>
             <button
               className="visit-store-button"
-              onClick={() => navigate(`/store/${item.foodPartner}`)}
+              onClick={() => navigate(`/food-partner/${item.foodPartner}`)}
             >
               Visit Store
             </button>

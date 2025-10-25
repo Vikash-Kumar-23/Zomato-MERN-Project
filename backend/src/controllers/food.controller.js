@@ -24,7 +24,20 @@ async function getFoodItems(req,res){
     const foodItems = await foodModel.find({});
     res.status(200).json({ message: 'Food items retrieved successfully',foodItems });
 }
+
+async function getFoodItemsByFoodPartnerId(req, res) {
+    const { foodPartnerId } = req.params;
+    try {
+        const foodItems = await foodModel.find({ foodPartner: foodPartnerId });
+        res.status(200).json({ message: 'Food items retrieved successfully', foodItems });
+    } catch (error) {
+        console.error('Error fetching food items by food partner ID:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     createFood,
-    getFoodItems
+    getFoodItems,
+    getFoodItemsByFoodPartnerId
 }
