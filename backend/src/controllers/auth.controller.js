@@ -101,7 +101,7 @@ async function registerFoodPartner(req, res) {
             id: newFoodPartner._id,
         },process.env.JWT_SECRET)
         res.cookie("token", token, { httpOnly: true, sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', secure: process.env.NODE_ENV === 'production' });
-        res.status(201).json({ success: true, message: 'Food partner registered successfully',
+        res.status(201).json({ success: true, message: 'Food partner registered successfully', token,
             foodPartner:{
                 _id:newFoodPartner._id,
                 name: newFoodPartner.name,
@@ -132,7 +132,7 @@ async function loginFoodPartner(req, res) {
             id: foodPartner._id,
         },process.env.JWT_SECRET)
         res.cookie("token", token, { httpOnly: true, sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', secure: process.env.NODE_ENV === 'production' });
-        res.status(200).json({ success: true, message: 'Food partner logged in successfully',
+        res.status(200).json({ success: true, message: 'Food partner logged in successfully', token,
             foodPartner:{
                 _id:foodPartner._id,
                 name: foodPartner.name,

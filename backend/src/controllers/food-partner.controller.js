@@ -1,10 +1,12 @@
 const foodPartnerModel = require('../models/foodpartner.model');
+const foodModel = require('../models/food.model');
 
 async function getFoodPartnerProfile(req, res) {
     const foodPartnerId = req.params.id;
     console.log('Received foodPartnerId:', foodPartnerId);
     try {
         const foodPartner = await foodPartnerModel.findById(foodPartnerId);
+        const foodItems = await foodModel.find({ foodPartner: foodPartnerId });
         console.log('Food partner found:', foodPartner);
     if (!foodPartner) {
       // Return a stub profile for non-existent IDs to prevent 404 on frontend
@@ -23,7 +25,7 @@ async function getFoodPartnerProfile(req, res) {
         },
       });
     }
-    res.status(200).json({ foodPartner });
+    res.status(200).json({ foodPartner, foodItems });
     } catch (error) {
         console.error('Error in getFoodPartnerProfile:', error);
         res.status(500).json({ message: 'Internal server error' });

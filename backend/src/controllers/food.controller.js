@@ -1,23 +1,34 @@
 const foodModel = require('../models/food.model');
-const storageService = require('../services/storage.service');
 
-async function createFood(req,res){
-    const { v4: uuid } = await import('uuid');
-    console.log('req.foodPartner:', req.foodPartner);
-    console.log('req.body:', req.body);
-    console.log('req.file:', req.file);
-    
-    const fileUploadResult = await storageService.uploadFile(req.file.buffer, uuid());
-    // console.log('fileUploadResult:', fileUploadResult);
+async function createFood(req, res) {
+  try {
+    const { name, description } = req.body;
+
+    if (!req.foodPartner) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    if (!name || typeof name !== 'string') {
+      return res.status(400).json({ message: 'Invalid name' });
+    }
+    if (!req.file) {
+      return res.status(400).json({ message: 'Video file is required' });
+    }
+
+    const filename = req.file.filename;
+    const videoUrl = `${req.protocol}://${req.get('host')}/uploads/videos/${filename}`;
 
     const foodItem = await foodModel.create({
-        name: req.body.name,
-        description: req.body.description,
-        video: fileUploadResult.url,
-        foodPartner: req.foodPartner._id
+      name,
+      description,
+      video: videoUrl,
+      foodPartner: req.foodPartner._id,
     });
 
-    res.status(201).json({ message: 'Food created successfully',food: foodItem });
+    res.status(201).json({ message: 'Food created successfully', food: foodItem });
+  } catch (error) {
+    console.error('Error creating food:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 }
 
 async function getFoodItems(req,res){

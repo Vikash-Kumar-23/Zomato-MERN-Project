@@ -1,5 +1,6 @@
 //create server
 const express = require('express');
+const path = require('path');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/auth.routes');
 const foodRoutes = require('./routes/food.routes');
@@ -21,6 +22,10 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/food', foodRoutes);
 app.use('/api/food-partner', foodPartnerRoutes);
+
+// Serve uploaded files (videos) statically for development
+// e.g. GET /uploads/videos/<filename>
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 
 
