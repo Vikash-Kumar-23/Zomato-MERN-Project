@@ -1,24 +1,24 @@
 import React, { useEffect, useState } from 'react'
 import './profile.css'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { FaMapMarkerAlt, FaUser, FaPhone, FaEnvelope } from 'react-icons/fa'
 
 const Profile = () => {
   const { id } = useParams();
   const partnerId = id || (typeof window !== 'undefined' ? window.location.pathname.split('/').pop() : undefined);
+  const navigate = useNavigate();
   const [foodPartner, setFoodPartner] = useState(null);
   const [foodItems, setFoodItems] = useState([]);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('meals');
-  const [comments, setComments] = useState([
-    { id: 1, name: 'Jane Doe', text: 'Absolutely amazing food! The pizza was cooked to perfection.', rating: 5 },
-    { id: 2, name: 'John Smith', text: 'Great service and tasty meals. The ice cream was a bit melted though.', rating: 4 },
-    { id: 3, name: 'Alice', text: 'Best food partner in the city. Highly recommend!', rating: 5 },
-    { id: 4, name: 'Bob', text: 'Good food, but delivery was slow.', rating: 3 },
-    { id: 5, name: 'Charlie', text: 'Loved the pasta, will order again!', rating: 5 },
-  ]);
+  const [reviews, setReviews] = useState([]);
   const [showAll, setShowAll] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [newRating, setNewRating] = useState(5);
+  const [newComment, setNewComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
     console.log('Profile ID from useParams:', id);
@@ -35,9 +35,19 @@ const Profile = () => {
         // Backend may return either the document itself or { foodPartner }
         const fp = foodPartnerResponse.data?.foodPartner ?? foodPartnerResponse.data;
         setFoodPartner(fp);
-
-        const foodItemsResponse = await axios.get(`http://localhost:3000/api/food-partner/${partnerId}/fooditems`);
-        setFoodItems(foodItemsResponse.data.foodItems || []);
+        // Prefer food items and reviews if included in profile response
+        if (foodPartnerResponse.data?.foodItems) {
+          setFoodItems(foodPartnerResponse.data.foodItems);
+        } else {
+          const foodItemsResponse = await axios.get(`http://localhost:3000/api/food-partner/${partnerId}/fooditems`);
+          setFoodItems(foodItemsResponse.data.foodItems || []);
+        }
+        if (foodPartnerResponse.data?.reviews) {
+          setReviews(foodPartnerResponse.data.reviews);
+        } else {
+          const reviewsResponse = await axios.get(`http://localhost:3000/api/food-partner/${partnerId}/reviews`);
+          setReviews(reviewsResponse.data.reviews || []);
+        }
         setError('');
       } catch (error) {
         console.error('Error fetching food partner data:', error?.message || error);
@@ -47,6 +57,44 @@ const Profile = () => {
 
     fetchFoodPartnerData();
   }, [id, partnerId]);
+
+  const submitReview = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) {
+      setError('Please add a comment');
+      return;
+    }
+    if (newRating < 1 || newRating > 5) {
+      setError('Rating must be between 1 and 5');
+      return;
+    }
+    try {
+      setSubmitting(true);
+      await axios.post(
+        `http://localhost:3000/api/food-partner/${partnerId}/reviews`,
+        { rating: newRating, comment: newComment },
+        { withCredentials: true }
+      );
+      // Refresh reviews to include the new one with populated user name
+      const reviewsResponse = await axios.get(`http://localhost:3000/api/food-partner/${partnerId}/reviews`);
+      setReviews(reviewsResponse.data.reviews || []);
+      setNewComment('');
+      setNewRating(5);
+      setShowReviewForm(false);
+      setError('');
+    } catch (err) {
+      console.error('Error submitting review:', err?.response?.data || err?.message || err);
+      const msg = err?.response?.data?.message || err?.message || 'Failed to submit review';
+      setError(msg);
+      if (err?.response?.status === 401) {
+        setUnauthorized(true);
+      } else {
+        setUnauthorized(false);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (error && !foodPartner) {
     return <div style={{ padding: 16 }}>Error: {error}</div>;
@@ -111,18 +159,55 @@ const Profile = () => {
 
       {activeTab === 'service' && (
         <div className="comments-section">
-          <button className="write-review-btn">Write a Review</button>
+          <button className="write-review-btn" onClick={() => setShowReviewForm((v) => !v)}>
+            {showReviewForm ? 'Cancel' : 'Write a Review'}
+          </button>
+          {showReviewForm && (
+            <form className="review-form" onSubmit={submitReview} style={{ marginTop: 12 }}>
+              <label style={{ display: 'block', marginBottom: 8 }}>
+                Rating:
+                <select value={newRating} onChange={(e) => setNewRating(Number(e.target.value))} style={{ marginLeft: 8 }}>
+                  {[1,2,3,4,5].map(r => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+              </label>
+              <textarea
+                placeholder="Share your experience..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                rows={4}
+                style={{ width: '100%', marginBottom: 8 }}
+              />
+              <button type="submit" className="submit-review-btn" disabled={submitting}>
+                {submitting ? 'Submitting...' : 'Submit Review'}
+              </button>
+              {error && (
+                <div style={{ color: 'salmon', marginTop: 8 }}>{error}</div>
+              )}
+              {unauthorized && (
+                <button
+                  type="button"
+                  className="login-btn"
+                  onClick={() => navigate('/user/login')}
+                  style={{ marginTop: 8, background: '#2563eb', color: '#fff', padding: '8px 12px', borderRadius: 6 }}
+                >
+                  Login to write a review
+                </button>
+              )}
+            </form>
+          )}
           <div className="customer-reviews">
             <h3>Customer Reviews</h3>
-            {comments.slice(0, showAll ? comments.length : 3).map((review) => (
-              <div className="review-card" key={review.id}>
-                <div className="reviewer-name">{review.name}</div>
-                <div className="review-text">{review.text}</div>
+            {reviews.slice(0, showAll ? reviews.length : 3).map((review) => (
+              <div className="review-card" key={review._id}>
+                <div className="reviewer-name">{review?.user?.fullName || 'Anonymous'}</div>
+                <div className="review-text">{review.comment}</div>
                 <div className="review-rating">{'★'.repeat(review.rating)}</div>
               </div>
             ))}
-            {comments.length > 3 && !showAll && (
-              <button className="see-more-btn" onClick={() => setShowAll(true)}>See More ({comments.length - 3} more)</button>
+            {reviews.length > 3 && !showAll && (
+              <button className="see-more-btn" onClick={() => setShowAll(true)}>See More ({reviews.length - 3} more)</button>
             )}
           </div>
           <div className="customer-service-footer">

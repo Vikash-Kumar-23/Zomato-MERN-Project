@@ -9,6 +9,12 @@ const router = express.Router();
 router.get('/:id', 
     foodPartnerController.getFoodPartnerProfile);
 
+// Reviews endpoints
+// GET reviews for a partner
+router.get('/:id/reviews', foodPartnerController.getReviews);
+// POST a review (user only)
+router.post('/:id/reviews', authMiddleware.authUserMiddleware, foodPartnerController.createReview);
+
 //GET /api/food-partner/:foodPartnerId/fooditems
 router.get('/:foodPartnerId/fooditems', foodController.getFoodItemsByFoodPartnerId);
 
